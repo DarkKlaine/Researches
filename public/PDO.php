@@ -1,54 +1,55 @@
 <?php
 
-class DBConnectionMySQLi
+class DBConnectionPDO
 {
     private string $servername = "localhost";
     private string $username = "root";
     private string $password = "pass";
     private string $dbname = "history";
-    private mysqli $connection;
+    private ?PDO $connection = null;
 
     public function __construct()
     {
-        $this->connection = new mysqli(
-            $this->servername,
-            $this->username,
-            $this->password,
-            $this->dbname,
-        );
+        $dsn = "mysql:host={$this->servername};dbname={$this->dbname}";
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ];
 
-        if ($this->connection->connect_error) {
-            die("Ошибка подключения: " . $this->connection->connect_error);
+        try {
+            $this->connection = new PDO($dsn, $this->username, $this->password, $options);
+        } catch (PDOException $e) {
+            die("Ошибка подключения: " . $e->getMessage());
         }
     }
 
-    public function getConnection(): mysqli
+    public function getConnection(): ?PDO
     {
         return $this->connection;
     }
 
     public function closeConnection(): void
     {
-        $this->connection->close();
+        $this->connection = null;
         echo "Соединение закрыто." . PHP_EOL;
     }
 }
 
-$databaseConnection = new DBConnectionMySQLi();
+$databaseConnection = new DBConnectionPDO();
 $connection = $databaseConnection->getConnection();
 
 //$sqlInsert = "INSERT INTO `test` (`expression`, `date`) VALUES ('11+1=12', CURRENT_TIMESTAMP)";
 //
-//if ($connection->query($sqlInsert) === TRUE) {
+//try {
+//    $connection->exec($sqlInsert);
 //    echo "Запись успешно создана" . PHP_EOL;
-//} else {
-//    echo "Ошибка при создании записи: " . $connection->error . PHP_EOL;
+//} catch (PDOException $e) {
+//    echo "Ошибка при создании записи: " . $e->getMessage() . PHP_EOL;
 //}
 
 $sqlSelect = "SELECT expression, date FROM test ORDER BY date DESC LIMIT 5";
 $result = $connection->query($sqlSelect);
 
-while ($row = $result->fetch_assoc()) {
+while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $expression = $row["expression"];
     $date = $row["date"];
 
