@@ -5,7 +5,7 @@ class DBConnectionPDO
     private string $servername = "localhost";
     private string $username = "root";
     private string $password = "pass";
-    private string $dbname = "history";
+    private string $dbname = "dkdb";
     private ?PDO $connection = null;
 
     public function __construct()
@@ -36,17 +36,18 @@ class DBConnectionPDO
 
 $databaseConnection = new DBConnectionPDO();
 $connection = $databaseConnection->getConnection();
+$stringForLogging = '';
 
-//$sqlInsert = "INSERT INTO `test` (`expression`, `date`) VALUES ('11+1=12', CURRENT_TIMESTAMP)";
-//
-//try {
-//    $connection->exec($sqlInsert);
-//    echo "Запись успешно создана" . PHP_EOL;
-//} catch (PDOException $e) {
-//    echo "Ошибка при создании записи: " . $e->getMessage() . PHP_EOL;
-//}
+$sqlInsert = "INSERT INTO history (expression, date) VALUES ($stringForLogging, CURRENT_TIMESTAMP)";
 
-$sqlSelect = "SELECT expression, date FROM test ORDER BY date DESC LIMIT 5";
+try {
+    $connection->exec($sqlInsert);
+    echo "Запись успешно создана" . PHP_EOL;
+} catch (PDOException $e) {
+    echo "Ошибка при создании записи: " . $e->getMessage() . PHP_EOL;
+}
+
+$sqlSelect = "SELECT expression, date FROM history ORDER BY date DESC LIMIT 5";
 $result = $connection->query($sqlSelect);
 
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
